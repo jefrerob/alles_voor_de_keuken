@@ -3,6 +3,7 @@ package be.vdab.alles_voor_de_keuken.domain;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 @Table(name = "artikels")
@@ -40,4 +41,12 @@ public class Artikel {
     public BigDecimal getVerkoopPrijs() {
         return verkoopPrijs;
     }
+
+    public void verhoogVerkoopPrijs (BigDecimal bedrag) {
+        if (bedrag.compareTo(BigDecimal.ZERO) <= 0){
+            throw new IllegalArgumentException();
+        }
+      verkoopPrijs = verkoopPrijs.add(bedrag).setScale(2, RoundingMode.HALF_UP);
+    }
+
 }
