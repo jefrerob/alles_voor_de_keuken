@@ -52,4 +52,24 @@ class JpaArtikelRepositoryTest extends AbstractTransactionalJUnit4SpringContextT
         assertThat(super.countRowsInTableWhere(ARTIKELS, "id =" + artikel.getId())).isOne();
     }
 
+    @Test
+    void findByNaam() {
+        assertThat(repository.findByNaam("test"))
+                .hasSize(super.jdbcTemplate.queryForObject(
+                        "select count(*) from artikels where naam like '%test%'",Integer.class))
+                .extracting(artikel -> artikel.getNaam().toLowerCase())
+                .allSatisfy(naam -> assertThat(naam).contains("test"))
+                .isSorted();
+    }
+
+
+    @Test
+    void verhoogAlleVerkoopprijzenMet(){
+        assertThat(repository.verhoogAlleVerkoopprijzenMet(BigDecimal.TEN))
+                .isEqualTo(super.countRowsInTable(ARTIKELS));
+        assertThat(super.jdbcTemplate.queryForObject(
+                "select verkoopprijs from artikels where id=?",BigDecimal.class, idVanTestArtikel1()))
+                .isEqualByComparingTo("110");
+    }
+
 }
