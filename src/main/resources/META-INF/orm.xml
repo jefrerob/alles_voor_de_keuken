@@ -12,7 +12,7 @@
     <named-query name="Artikel.verhoogAlleVerkoopprijzenMet">
         <query>
             update Artikel a
-            set a.verkoopprijs = a.verkoopprijs * :factor
+            set a.verkoopPrijs = a.verkoopPrijs * :factor
         </query>
     </named-query>
 </entity-mappings>

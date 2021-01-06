@@ -18,7 +18,7 @@ class ArtikelTest {
 
     @BeforeEach
     void beforeEach(){
-        artikel = new Artikel("test",AANKOOPPRIJS,VERKOOPPRIJS);
+        artikel = new FoodArtikel("test",AANKOOPPRIJS,VERKOOPPRIJS, 1);
     }
 
     @Test

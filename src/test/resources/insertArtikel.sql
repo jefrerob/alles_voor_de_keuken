@@ -1,1 +1,4 @@
-insert into artikels(naam, aankoopprijs, verkoopprijs) values ('testArtikel1', 100, 100)
+insert into artikels(naam, aankoopprijs, verkoopprijs, houdbaarheid, soort)
+values('testfood', 100, 120, 7, 'F');
+insert into artikels(naam, aankoopprijs, verkoopprijs, garantie, soort)
+values('testnonfood', 100, 120, 30, 'NF');
