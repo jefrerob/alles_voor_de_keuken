@@ -2,6 +2,7 @@ package be.vdab.alles_voor_de_keuken.repositories;
 
 import be.vdab.alles_voor_de_keuken.domain.Artikel;
 import be.vdab.alles_voor_de_keuken.domain.FoodArtikel;
+import be.vdab.alles_voor_de_keuken.domain.Korting;
 import be.vdab.alles_voor_de_keuken.domain.NonFoodArtikel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -89,6 +90,12 @@ class JpaArtikelRepositoryTest extends AbstractTransactionalJUnit4SpringContextT
         assertThat(super.jdbcTemplate.queryForObject(
                 "select verkoopprijs from artikels where id=?", BigDecimal.class,
                 idVanTestFoodArtikel())).isEqualByComparingTo("132");
+    }
+
+    @Test
+    void kortingenLezen() {
+        assertThat(repository.findById(idVanTestFoodArtikel()).get().getKortingen())
+                .containsOnly(new Korting(1, BigDecimal.ONE));
     }
 
 }
