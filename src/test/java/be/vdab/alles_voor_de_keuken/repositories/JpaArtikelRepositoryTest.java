@@ -1,9 +1,6 @@
 package be.vdab.alles_voor_de_keuken.repositories;
 
-import be.vdab.alles_voor_de_keuken.domain.Artikel;
-import be.vdab.alles_voor_de_keuken.domain.FoodArtikel;
-import be.vdab.alles_voor_de_keuken.domain.Korting;
-import be.vdab.alles_voor_de_keuken.domain.NonFoodArtikel;
+import be.vdab.alles_voor_de_keuken.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -11,6 +8,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 
+import javax.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -18,17 +16,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 @DataJpaTest
-@Sql("/insertArtikel.sql")
+@Sql({"/insertArtikelGroep.sql", "/insertArtikel.sql"})
 @Import(JpaArtikelRepository.class)
 class JpaArtikelRepositoryTest extends AbstractTransactionalJUnit4SpringContextTests {
 
     private final JpaArtikelRepository repository;
     private final static String ARTIKELS = "artikels";
+    private final EntityManager manager;
 
-    public JpaArtikelRepositoryTest(JpaArtikelRepository repository) {
+    public JpaArtikelRepositoryTest(JpaArtikelRepository repository, EntityManager manager) {
         this.repository = repository;
+        this.manager = manager;
     }
-
 
     private long idVanTestFoodArtikel() {
         return super.jdbcTemplate.queryForObject("select id from artikels where naam = 'testfood'", long.class);
@@ -47,11 +46,15 @@ class JpaArtikelRepositoryTest extends AbstractTransactionalJUnit4SpringContextT
 
     @Test
     void findFoodArtikelById() {
-        var artikel = repository.findById(idVanTestFoodArtikel()).get(); assertThat(artikel).isInstanceOf(FoodArtikel.class); assertThat(artikel.getNaam()).isEqualTo("testfood");
+        var artikel = repository.findById(idVanTestFoodArtikel()).get();
+        assertThat(artikel).isInstanceOf(FoodArtikel.class);
+        assertThat(artikel.getNaam()).isEqualTo("testfood");
     }
     @Test
     void findNonFoodArtikelById() {
-        var artikel = repository.findById(idVanTestNonFoodArtikel()).get(); assertThat(artikel).isInstanceOf(NonFoodArtikel.class); assertThat(artikel.getNaam()).isEqualTo("testnonfood");
+        var artikel = repository.findById(idVanTestNonFoodArtikel()).get();
+        assertThat(artikel).isInstanceOf(NonFoodArtikel.class);
+        assertThat(artikel.getNaam()).isEqualTo("testnonfood");
     }
     @Test
     void findOnbestaandeId() {
@@ -59,15 +62,19 @@ class JpaArtikelRepositoryTest extends AbstractTransactionalJUnit4SpringContextT
     }
     @Test
     void createFoodArtikel() {
-        var artikel = new FoodArtikel("testfood2",BigDecimal.ONE,BigDecimal.TEN,7);
+        var groep = new ArtikelGroep("test");
+        manager.persist(groep);
+        var artikel = new FoodArtikel("testfood",BigDecimal.ONE,BigDecimal.TEN,groep,7);
         repository.create(artikel);
         assertThat(super.countRowsInTableWhere(ARTIKELS,
                 "id=" + artikel.getId())).isOne();
     }
     @Test
     void createNonFoodArtikel() {
+        var groep = new ArtikelGroep("test");
+        manager.persist(groep);
         var artikel =
-                new NonFoodArtikel("testnonfood2", BigDecimal.ONE, BigDecimal.TEN, 30);
+                new NonFoodArtikel("testnonfood", BigDecimal.ONE, BigDecimal.TEN, groep,30);
         repository.create(artikel);
         assertThat(super.countRowsInTableWhere(ARTIKELS,
                 "id=" + artikel.getId())).isOne();
@@ -96,6 +103,12 @@ class JpaArtikelRepositoryTest extends AbstractTransactionalJUnit4SpringContextT
     void kortingenLezen() {
         assertThat(repository.findById(idVanTestFoodArtikel()).get().getKortingen())
                 .containsOnly(new Korting(1, BigDecimal.ONE));
+    }
+
+    @Test
+    void artikelGroepLazyLoaded() {
+        assertThat(repository.findById(idVanTestFoodArtikel()).get()
+                .getArtikelGroep().getNaam()).isEqualTo("test");
     }
 
 }
